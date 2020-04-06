@@ -1,0 +1,50 @@
+Trace File: Trace1A.trc
+Cache Size: 1024
+Block Size: 16
+Associativity: 2
+R-Policy: RR
+
+Cache Simulator - CS 3853 Spring 2020 - Team 15
+
+Trace File:                     Trace1A.trc
+
+****** Cache Input Parameters ******
+
+Cache Size:                     1024
+Block Size:                     16
+Associativity:                  2
+Replacement Policy:             RR
+
+***** Calculated Values *****
+
+Total # Blocks:                 65536
+Tag Size:                       13
+Index Size:                     15
+Total # Rows:                   32768
+Overhead Size:                  114688 bytes
+Implementation Memory Size:     1136.0 KB (114688 bytes)
+Cost:                           $56.80
+
+
+First 20 addresses and lengths
+--------------------------------------
+0x7c809755: (06)
+0x7c80975b: (03)
+0x7c80975e: (03)
+0x7c809761: (06)
+0x7c809767: (04)
+0x7c80976b: (07)
+0x7c809772: (01)
+0x7c809773: (03)
+0x017638ac: (02)
+0x017638ae: (01)
+0x40000002: (00)
+0x40000002: (00)
+0x7c90eaf0: (03)
+0x7c90eaf3: (01)
+0x7c90eaf4: (01)
+0x7c90eaf5: (05)
+0x7c9377c1: (02)
+0x7c9377c3: (01)
+0x7c9377c4: (02)
+0x7c9377c6: (03)
