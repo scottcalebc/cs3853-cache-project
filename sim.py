@@ -54,14 +54,54 @@ cache = Cache(size=cacheSize, associativity=associativity, block_size=blockSize,
 
 print(cache)
 
-lines = f.readlines()
-stopPoint = range(0,60)
-print("\nFirst 20 addresses and lengths\n--------------------------------------")
-for i in stopPoint:
-    cLine = lines[i].split()
-    if not lines[i].strip():
+#lines = f.readlines()
+stopPoint = 0
+# print("\nFirst 20 addresses and lengths\n--------------------------------------")
+#for i in stopPoint:
+cache_access = 0
+for lines in f:
+    # if stopPoint > 109:
+    #     break
+    cLine = lines.split()
+    if not lines.strip():
         ...
     elif cLine[0] == 'EIP':
-        print("0x" + cLine[2] + ":", cLine[1].strip(":"))
+        addr = int(cLine[2], 16)
+        num_bytes = cLine[1].strip(":()")
+        # print(f"{hex(addr)}: ({num_bytes})")
+
+        cache.data_access(addr, num_bytes, 2)
+        cache_access += 1
+        
     else :
-        ...
+        # one or both or neither can be zero
+        dest = int(cLine[cLine.index("dstM:") + 1], 16)
+        src = int(cLine[cLine.index("srcM:") + 1], 16)
+        num_bytes = 4
+
+        if dest:
+            # print(f"Destination: {hex(dest)} bytes: 4")
+            cache.data_access(dest, num_bytes, 1)
+            cache_access += 1
+        if src:
+            # print(f"Source: {hex(src)} bytes: 4")
+            cache.data_access(src, num_bytes, 1)
+            cache_access += 1
+
+        
+
+        #if dest and src:
+            #print(f'dest: {hex(dest)}\tsrc: {hex(src)}')
+        # if int(dest) != 0 and int(src) != 0:
+        #     print(f'dest: {dest} \t src: {src}')
+
+    stopPoint += 1
+
+
+print("\n***** CACHE SIMULATION RESULTS *****\n")
+print(cache.results())
+
+print("\n***** CACHE HIT & MISS RATE: *****\n")
+print(cache.cpi_rate())
+
+print(f"Sanity check: {cache_access}")
