@@ -85,7 +85,7 @@ class Cache():
 
     def __str__(self):
         return (
-            f'Total # Blocks:                 {self.size / self.block_size}\n'
+            f'Total # Blocks:                 {math.ceil(self.size / self.block_size)}\n'
             f'Tag Size:                       {self.tag_bits}\n'
             f'Index Size:                     {self.index_bits}\n'
             f'Total # Rows:                   {self.columns[0].num_rows}\n'

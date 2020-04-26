@@ -36,7 +36,12 @@ except Exception:
 
 
 f = open(filename, 'r')
-print("Cache Simulator CS 3853 Spring 2020\n")
+print(f'Trace File: {filename}')
+print(f'Cache Size: {cacheSize}')
+print(f'Block Size: {blockSize}')
+print(f'Associativity: {associativity}')
+print(f'R-Policy: {policy}\n')
+print("Cache Simulator - CS 3853 Spring 2020 - Team 15\n")
 print(f'Trace File:                     {filename}\n')
 print("****** Cache Input Parameters ******\n")
 print(f'Cache Size:                     {cacheSize}')
