@@ -2,9 +2,6 @@
 import math
 import random
 
-compulsory_miss = 0
-conflict_miss = 0
-
 
 class Row:
     def __init__(self,
