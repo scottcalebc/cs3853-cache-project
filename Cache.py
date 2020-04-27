@@ -58,10 +58,12 @@ class Column:
         return self.rows[index].set_access(tag)
 
     def data_access(self, index, tag):
-        if self.cache.alg == "LRU":
-            self.cache.set_col_access(self)
+        row_ret = self.rows[index].data_access(tag)
 
-        return self.rows[index].data_access(tag)
+        if row_ret and self.cache.alg == "LRU":
+            self.cache.set_col_access(self)
+        
+        return row_ret
 
     def find_empty(self, index):
         if self.rows[index].valid:
@@ -157,7 +159,7 @@ class Cache():
     def set_col_access(self, col_obj):
         self.lru_col[self.columns.index(col_obj)] = 0
     
-    def update_access(self):
+    def update_col_access(self):
         self.lru_col = list(map(lambda x: x+1, self.lru_col))
 
     def algo_col(self):
@@ -173,7 +175,6 @@ class Cache():
 
     def algo_add(self, index, tag):
         col = self.algo_col()
-        # print(f"Adding item to {col}th column")
         self.columns[col].set_access(index, tag)
 
 
@@ -190,11 +191,12 @@ class Cache():
 
     def find_item(self, index, tag, block_offset, num_bytes):
         
-        self.total_access += 1
+        #self.total_access += 1
 
         # print(f"TAG: {tag}\tINDEX: {index}\tblock_offset: {block_offset}")
         for col in self.columns:
             if col.data_access(index, tag):
+                self.total_access += 1
                 # print("Access!")
                 self.hits += 1
                 self.on_hit()
@@ -204,17 +206,19 @@ class Cache():
             self.add_item(index, tag)
             self.find_item(index, tag, block_offset, num_bytes)
             self.hits -=1 
+            
 
         blk_leftover = self.block_size - block_offset
         if blk_leftover < num_bytes:
             self.find_item(index + 1, tag, 0, num_bytes - blk_leftover)
             
 
-
-
     def data_access(self, address, num_bytes, instr_cost):
         tag, index, block_offset = self.get_cache_bits(address)
         # self.total_access += 1
+        
+        if self.alg == "LRU" :
+            self.update_col_access()
 
         self.find_item(index, tag, block_offset, int(num_bytes))
 
@@ -222,16 +226,14 @@ class Cache():
         #print(f"TAG: {tag}\tINDEX: {index}\tblock_offset: {block_offset}")
 
 
-
-
-
     # string methods
     def unused_space(self):
         total_blks = math.ceil(self.size/self.block_size)
+        leftover_blks = total_blks - self.compulsory_miss
+        size_of_block_w_overhead = ((self.block_size * 2**3) + 1 + self.tag_bits)/2**3
+        kb = 1024
 
-        unused = ( (total_blks - self.compulsory_miss) * (self.block_size + self.overhead_bytes) ) / self.size
-
-        unused = unused/2**3
+        unused = ( leftover_blks * size_of_block_w_overhead ) / kb
 
         return f'{"{0:.2f}".format(unused)} KB / {self.total_memory_size} KB = {"{0:.2f}%".format((unused/self.total_memory_size)*100)} Waste: {"${0:.2f}".format(unused * self.cost)}'
 
@@ -241,7 +243,7 @@ class Cache():
 
 
     def impl_mem_size(self):
-        return f'{self.total_memory_size} KB ({self.overhead_bytes} bytes)'
+        return f'{self.total_memory_size} KB ({int(self.total_memory_size * 1024)} bytes)'
         
         
 
@@ -264,22 +266,15 @@ class Cache():
             f'CPI:                              {"{0:.3}".format(self.total_cycles / self.instr_count)} Cycles/Instruction\n'
             f'Unused Cache Space:               {self.unused_space()}\n'
             f'Unused Cache Blocks:              {math.ceil(self.size / self.block_size) - self.compulsory_miss} / {math.ceil(self.size / self.block_size)}\n'
-
-
         )
 
     def __str__(self):
         return (
             f'Total # Blocks:                 {math.ceil(self.size / self.block_size)}\n'
-            f'Tag Size:                       {self.tag_bits}\n'
-            f'Index Size:                     {self.index_bits}\n'
+            f'Tag Size:                       {self.tag_bits} bits\n'
+            f'Index Size:                     {self.index_bits} bits\n'
             f'Total # Rows:                   {self.columns[0].num_rows}\n'
             f'Overhead Size:                  {self.overhead_size()}\n'
             f'Implementation Memory Size:     {self.impl_mem_size()}\n'
             f'Cost:                           {self.cost_str()}\n'
         )
-        
-            
-
-        
-

@@ -10,6 +10,16 @@ sys.argv.pop(0)
 usage = "python sim.py -f trace_file -s size_in_KB -b block_size -a associativity -r replacment_policy"
 
 
+def get_policy_full(policy):
+    if policy == 'RR':
+        return 'Round Robin'
+    elif policy == 'RND':
+        return 'Random'
+    elif policy == 'LRU':
+        return 'Least Recently Used'
+    else:
+        return policy
+
 def get_param_switch(switch):
     f = sys.argv.index(switch)
     sys.argv.pop(f)
@@ -44,12 +54,10 @@ print(f'R-Policy: {policy}\n')
 print("Cache Simulator - CS 3853 Spring 2020 - Team 15\n")
 print(f'Trace File:                     {filename}\n')
 print("****** Cache Input Parameters ******\n")
-print(f'Cache Size:                     {cacheSize}')
-print(f'Block Size:                     {blockSize}')
+print(f'Cache Size:                     {cacheSize} KB')
+print(f'Block Size:                     {blockSize} bytes')
 print(f'Associativity:                  {associativity}')
-print(f'Replacement Policy:             {policy}\n')
-print("***** Calculated Values *****\n")
-
+print(f'Replacement Policy:             {get_policy_full(policy)}\n')
 cache = Cache(size=cacheSize, associativity=associativity, block_size=blockSize, alg=policy)
 
 print(cache)
@@ -59,10 +67,13 @@ stopPoint = 0
 # print("\nFirst 20 addresses and lengths\n--------------------------------------")
 #for i in stopPoint:
 cache_access = 0
+instr_count = 0
+non_instr = 0
 for lines in f:
-    # if stopPoint > 109:
+    # if stopPoint > 209:
     #     break
     cLine = lines.split()
+    
     if not lines.strip():
         ...
     elif cLine[0] == 'EIP':
@@ -72,6 +83,7 @@ for lines in f:
 
         cache.data_access(addr, num_bytes, 2)
         cache_access += 1
+        instr_count += 1
         
     else :
         # one or both or neither can be zero
@@ -82,13 +94,13 @@ for lines in f:
         if dest:
             # print(f"Destination: {hex(dest)} bytes: 4")
             cache.data_access(dest, num_bytes, 1)
-            cache_access += 1
+            non_instr += 1
         if src:
             # print(f"Source: {hex(src)} bytes: 4")
             cache.data_access(src, num_bytes, 1)
-            cache_access += 1
+            non_instr += 1
 
-        
+    # print(cache.lru_col)
 
         #if dest and src:
             #print(f'dest: {hex(dest)}\tsrc: {hex(src)}')
@@ -104,4 +116,7 @@ print(cache.results())
 print("\n***** CACHE HIT & MISS RATE: *****\n")
 print(cache.cpi_rate())
 
-print(f"Sanity check: {cache_access}")
+
+print(cache.total_cycles)
+print(non_instr)
+# print(f"Sanity check: {cache_access}")
