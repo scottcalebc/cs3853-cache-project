@@ -62,16 +62,16 @@ cache = Cache(size=cacheSize, associativity=associativity, block_size=blockSize,
 
 print(cache)
 
-#lines = f.readlines()
+
 stopPoint = 0
-# print("\nFirst 20 addresses and lengths\n--------------------------------------")
-#for i in stopPoint:
+
 cache_access = 0
 instr_count = 0
 non_instr = 0
 for lines in f:
     # if stopPoint > 209:
     #     break
+
     cLine = lines.split()
     
     if not lines.strip():
@@ -79,11 +79,8 @@ for lines in f:
     elif cLine[0] == 'EIP':
         addr = int(cLine[2], 16)
         num_bytes = cLine[1].strip(":()")
-        # print(f"{hex(addr)}: ({num_bytes})")
 
         cache.data_access(addr, num_bytes, 2)
-        cache_access += 1
-        instr_count += 1
         
     else :
         # one or both or neither can be zero
@@ -94,18 +91,10 @@ for lines in f:
         if dest:
             # print(f"Destination: {hex(dest)} bytes: 4")
             cache.data_access(dest, num_bytes, 1)
-            non_instr += 1
+
         if src:
             # print(f"Source: {hex(src)} bytes: 4")
             cache.data_access(src, num_bytes, 1)
-            non_instr += 1
-
-    # print(cache.lru_col)
-
-        #if dest and src:
-            #print(f'dest: {hex(dest)}\tsrc: {hex(src)}')
-        # if int(dest) != 0 and int(src) != 0:
-        #     print(f'dest: {dest} \t src: {src}')
 
     stopPoint += 1
 
@@ -115,8 +104,3 @@ print(cache.results())
 
 print("\n***** CACHE HIT & MISS RATE: *****\n")
 print(cache.cpi_rate())
-
-
-print(cache.total_cycles)
-print(non_instr)
-# print(f"Sanity check: {cache_access}")

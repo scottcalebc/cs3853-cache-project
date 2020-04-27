@@ -14,12 +14,7 @@ class Row:
         self.cache = cache
 
     def set_access(self, tag):
-        if self.valid == 1:
-            self.cache.conflict_miss += 1
-        else:
-            self.cache.compulsory_miss += 1
-        
-        self.cache.on_miss()
+        self.cache.on_miss(self.valid)
 
         #print(f"Setting Row to {tag}")
         self.valid = 1
@@ -112,6 +107,8 @@ class Cache():
         self.total_cycles = 0
         self.instr_count = 0
 
+        self.extra = 0
+
 
         for i in range(0, associativity):
             col = Column(int(rows), self.block_size, self)
@@ -145,9 +142,16 @@ class Cache():
 
     def on_hit(self):
         self.total_cycles += 1
+        self.hits += 1
 
-    def on_miss(self):
-        self.total_cycles += math.ceil(3 * (self.block_size/4))
+    def on_miss(self, miss_type):
+        self.total_cycles += 3 * math.ceil(self.block_size/4)
+
+        if miss_type == 0:
+            self.compulsory_miss += 1
+        
+        if miss_type == 1:
+            self.conflict_miss += 1
 
     def extra_cycles(self, num):
         self.total_cycles += num
@@ -182,31 +186,24 @@ class Cache():
     def add_item(self, index, tag):
         for col in self.columns:
             if col.find_empty(index):
-                # print(f"Adding item to empty col {self.columns.index(col)}th column")
                 col.set_access(index, tag)
                 break
         else:
             self.algo_add(index, tag)
 
 
-    def find_item(self, index, tag, block_offset, num_bytes):
-        
-        #self.total_access += 1
-
-        # print(f"TAG: {tag}\tINDEX: {index}\tblock_offset: {block_offset}")
+    def find_item(self, index, tag, block_offset, num_bytes, second_access=False):
         for col in self.columns:
             if col.data_access(index, tag):
                 self.total_access += 1
-                # print("Access!")
-                self.hits += 1
-                self.on_hit()
+
+                if not second_access:
+                    self.on_hit()
+
                 break
         else:
-            # print("Not found! Adding to cache.")
             self.add_item(index, tag)
-            self.find_item(index, tag, block_offset, num_bytes)
-            self.hits -=1 
-            
+            self.find_item(index, tag, block_offset, num_bytes, True)            
 
         blk_leftover = self.block_size - block_offset
         if blk_leftover < num_bytes:
@@ -215,7 +212,7 @@ class Cache():
 
     def data_access(self, address, num_bytes, instr_cost):
         tag, index, block_offset = self.get_cache_bits(address)
-        # self.total_access += 1
+
         
         if self.alg == "LRU" :
             self.update_col_access()
@@ -223,6 +220,7 @@ class Cache():
         self.find_item(index, tag, block_offset, int(num_bytes))
 
         self.extra_cycles(instr_cost)
+
         #print(f"TAG: {tag}\tINDEX: {index}\tblock_offset: {block_offset}")
 
 
