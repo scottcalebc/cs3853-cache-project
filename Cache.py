@@ -84,13 +84,13 @@ class Cache():
 
         self.next_col_index = 0
         self.columns = []
-        rows = self.size / (self.block_size * self.associativity)
+        self.rows = self.size / (self.block_size * self.associativity)
 
         self.block_offset_bits = int(math.log(float(block_size), 2))
-        self.index_bits = int(math.log(float(rows), 2))
+        self.index_bits = int(math.log(float(self.rows), 2))
         self.tag_bits = self.address_bits - self.index_bits - self.block_offset_bits
         
-        self.overhead_bytes = int((self.associativity * (1 + self.tag_bits) * rows)/8)
+        self.overhead_bytes = int((self.associativity * (1 + self.tag_bits) * self.rows)/8)
         self.total_memory_size = (self.size + self.overhead_bytes)/ 2**10
 
         self.cost = 0.05
@@ -111,7 +111,7 @@ class Cache():
 
 
         for i in range(0, associativity):
-            col = Column(int(rows), self.block_size, self)
+            col = Column(int(self.rows), self.block_size, self)
             self.columns.append(col)
 
 
@@ -207,7 +207,11 @@ class Cache():
 
         blk_leftover = self.block_size - block_offset
         if blk_leftover < num_bytes:
-            self.find_item(index + 1, tag, 0, num_bytes - blk_leftover)
+            index += 1
+            if index >= self.rows:
+                tag += 1
+                index = int(index % self.rows)
+            self.find_item(index, tag, 0, num_bytes - blk_leftover)
             
 
     def data_access(self, address, num_bytes, instr_cost):
@@ -221,7 +225,7 @@ class Cache():
 
         self.extra_cycles(instr_cost)
 
-        #print(f"TAG: {tag}\tINDEX: {index}\tblock_offset: {block_offset}")
+        # print(f"TAG: {tag}\tINDEX: {index}\tblock_offset: {block_offset}")
 
 
     # string methods
